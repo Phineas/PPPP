@@ -9,16 +9,33 @@ lAvg = 1
 threshold=200
 
 video_capture = cv2.VideoCapture('/home/still/Downloads/video4.mp4')
-
+prev_frame = None
 #Reads from video capture device with 
 while True:
     # Capture frame-by-frame
     ret, frame = video_capture.read()
-
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    
-    edges = cv2.Canny(gray,50,150,apertureSize = 3)
+    gray = cv2.medianBlur(gray,5)
+    gaus_frame=cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,11,2)
+    if prev_frame==None:
+        prev_frame=gaus_frame
+        continue
 
+##    diff_frame=gray-prev_frame
+
+    ##    for x in range(len(gray)):
+    ##        for y in range(len(gray[0])):
+    ##            print gray[x][y]-prev_frame[x][y]
+    ##           
+    ##            if gray[x][y]-prev_frame[x][y]>250:
+    ##                diff_frame[x][y]=0
+    ##            else:
+    ##                diff_frame[x][y]=gray[x][y]-prev_frame[x][y]
+    diff_frame=gaus_frame-prev_frame
+    edges = cv2.Canny(gaus_frame,50,150,apertureSize = 3)
+
+ #   prev_frame=gray
+    
     minLineLength = 50
     maxLineGap =10
 
@@ -51,7 +68,7 @@ while True:
         # Display the resulting frame
     else:
         threshold-=1
-    cv2.imshow('Video', frame)
+    cv2.imshow('Video', gaus_frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
